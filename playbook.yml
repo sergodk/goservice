@@ -1,0 +1,27 @@
+- name: Install GO
+  hosts: test1
+  become: yes
+  become_user: admin
+  tasks:
+    - name: Install GO
+      apt: 
+        name: golang
+        state: latest
+    - name: Install git
+      apt:
+        name: git
+        state: latest
+    - name: Pull from git
+      git:
+        repo: git@github.com:sergodk/goservice.git
+        dest: goservice/
+        force: yes
+        update: yes
+    - name: Build golang application
+      ansible.builtin.shell:
+        cmd: go build main.go
+        chdir: goservice/
+    - name: RUN APPLICATION
+      ansible.builtin.shell:
+        cmd: ./main
+        chdir: goservice/
