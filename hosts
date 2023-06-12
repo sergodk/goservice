@@ -1,2 +1,0 @@
-[test]
-test1 ansible_host=sergodk.duckdns.org ansible_user=admin ansible_port=22
