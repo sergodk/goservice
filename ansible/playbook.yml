@@ -1,0 +1,53 @@
+- name: deploy-golang-application
+  hosts: sergodk-vps
+  become: yes
+  become_user: admin
+  tasks:
+    - name: apt-golang
+      become_user: root
+      apt: 
+        name: golang
+        state: latest
+      tags:
+         - install
+    - name: apt-git
+      become_user: root
+      apt:
+        name: git
+        state: latest
+      tags:
+         - install
+    - name: pull-app
+      git:
+        accept_hostkey: yes
+        repo: git@github.com:sergodk/goservice.git
+        dest: goservice/
+        force: yes
+        update: yes
+      tags:
+         - build-latest
+         - test
+    - name: build-app
+      ansible.builtin.shell:
+        cmd: go build main.go
+        chdir: goservice/
+      tags:
+         - build-latest
+         - test
+    - name: run-app
+      ansible.builtin.shell:
+        cmd: ./main
+        chdir: goservice/
+      async: 10 # time in seconds to wait task finish
+      tags:
+         - test
+    - name: run-daemon-app
+      ansible.builtin.shell:
+        cmd: start-stop-daemon --start --background --startas /home/admin/goservice/main --name main
+      tags:
+         - start-daemon
+    - name: stop-daemon-app
+      ansible.builtin.shell:
+        cmd: start-stop-daemon --stop --name main
+      tags:
+         - stop-daemon
